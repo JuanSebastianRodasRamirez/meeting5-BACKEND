@@ -3,6 +3,7 @@ ENUNCIADO MP #3 PLATAFORMA DE VIDEOCONFERENCIAS.docx.pdf
 image.png
 test*
 verify-requirements.js
+cleanup-database.js
 
 # Dependencies
 node_modules/

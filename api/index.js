@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import userRoutes from './routes/userRoutes.js';
 import meetingsRoutes from './routes/meetingsRoutes.js';
+import socialAuthRoutes from './routes/socialAuthRoutes.js';
 import logger from './utils/logger.js';
 
 dotenv.config();
@@ -50,6 +51,7 @@ app.get('/health', (req, res) => {
  */
 app.use('/api/users', userRoutes);
 app.use('/api/meetings', meetingsRoutes);
+app.use('/api/auth/social', socialAuthRoutes);
 
 /**
  * 404 route

@@ -276,9 +276,19 @@ export const requestPasswordReset = async (req, res) => {
     });
     
     // Send email
-    await sendPasswordRecoveryEmail(email, resetToken);
+    try {
+      await sendPasswordRecoveryEmail(email, resetToken);
+      logger.info(`Password recovery email sent to: ${email}`);
+    } catch (emailError) {
+      logger.error(`Failed to send recovery email to ${email}:`, emailError);
+      // In development: continue anyway (token is in database)
+      // In production: you might want to return an error
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error('Failed to send recovery email. Please try again later.');
+      }
+    }
     
-    logger.info(`Password recovery requested: ${email}`);
+    logger.info(`Password recovery token created for: ${email}`);
     
     res.status(200).json({
       success: true,
@@ -335,6 +345,32 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to reset password',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Logs out a user (invalidates token on client side)
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ */
+export const logout = async (req, res) => {
+  try {
+    // Note: With JWT, logout is handled client-side by removing the token
+    // This endpoint serves as a confirmation and logging mechanism
+    
+    logger.info(`User logged out: ${req.user.email}`);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Logout successful'
+    });
+  } catch (error) {
+    logger.error('Failed to logout', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to logout',
       error: error.message
     });
   }

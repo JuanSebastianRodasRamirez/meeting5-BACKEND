@@ -106,4 +106,10 @@ router.post(
   UserController.resetPassword
 );
 
+/**
+ * POST /api/users/logout
+ * Logs out the authenticated user
+ */
+router.post('/logout', auth, UserController.logout);
+
 export default router;
