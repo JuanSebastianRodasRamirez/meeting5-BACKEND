@@ -1,8 +1,9 @@
-import express, { Router } from 'express';
+import express, { Router, Response } from 'express';
 import { body } from 'express-validator';
 import * as UserController from '../controllers/UserController.js';
 import { auth } from '../middleware/auth.js';
 import { validate } from '../middleware/validation.js';
+import { AuthenticatedRequest } from '../types/index.js';
 
 /**
  * User Routes
@@ -74,6 +75,19 @@ router.put(
   UserController.updateProfile
 );
 
+// VERIFY TOKEN - Validate JWT Token
+/**
+ * GET /api/users/verify-token
+ * Validates if a JWT token is valid
+ * @returns {Object} 200 - Token is valid.
+ * @returns {Error} 401 - Invalid or expired token.
+ */
+router.get('/verify-token', auth, (req: express.Request & { user?: { userId?: string; email?: string } }, res: express.Response) => {
+  // `auth` middleware attaches an object to `req.user`:
+  // { userId: decoded.userId, email: decoded.email }
+  res.status(200).json({ valid: true, userId: req.user?.userId });
+});
+
 /**
  * DELETE /api/users/account
  * Deletes the user's account
@@ -91,6 +105,21 @@ router.get('/verify-token', auth, (req: express.Request & { user?: { userId?: st
   // { userId: decoded.userId, email: decoded.email }
   res.status(200).json({ valid: true, userId: req.user?.userId });
 });
+
+/**
+ * PUT /api/users/password
+ * Changes password for authenticated user
+ */
+router.put(
+  '/password',
+  auth,
+  [
+    body('currentPassword').notEmpty().withMessage('Current password is required'),
+    body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
+  ],
+  validate,
+  UserController.changePassword
+);
 
 /**
  * POST /api/users/password-reset/request

@@ -353,6 +353,59 @@ export const resetPassword = async (req: Request, res: Response): Promise<Respon
 };
 
 /**
+ * Changes password for authenticated user
+ * @param req - Express request
+ * @param res - Express response
+ */
+export const changePassword = async (req: AuthenticatedRequest, res: Response): Promise<Response> => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    
+    // Get the user with password
+    const user = await UserDAO.findById(req.user!.userId);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    // Verify current password
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+    
+    if (!isValidPassword) {
+      return res.status(401).json({
+        success: false,
+        message: 'Current password is incorrect'
+      });
+    }
+    
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    
+    // Update the user's password
+    await UserDAO.update(req.user!.userId, {
+      password: hashedPassword
+    });
+    
+    logger.info(`Password changed for user: ${req.user!.email}`);
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+  } catch (error) {
+    logger.error('Failed to change password', error instanceof Error ? error : null);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to change password',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};
+
+/**
  * Logs out a user (invalidates token on client side)
  * @param req - Express request
  * @param res - Express response

@@ -191,7 +191,49 @@ Authorization: Bearer <tu-token-jwt>
 
 ---
 
-### 6. Eliminar Cuenta de Usuario
+### 6. Cambiar Contraseña
+Cambia la contraseña del usuario autenticado.
+
+**Endpoint:** `PUT /users/password`
+
+**Headers:**
+```
+Authorization: Bearer <tu-token-jwt>
+```
+
+**Cuerpo de la Petición:**
+```json
+{
+  "currentPassword": "password123",
+  "newPassword": "newPassword456"
+}
+```
+
+**Respuesta (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Password changed successfully"
+}
+```
+
+**Respuesta de Error (401 Unauthorized):**
+```json
+{
+  "success": false,
+  "message": "Current password is incorrect"
+}
+```
+
+**Reglas de Validación:**
+- `currentPassword`: Requerido, debe coincidir con la contraseña actual del usuario
+- `newPassword`: Requerido, mínimo 6 caracteres
+
+**Nota:** Este endpoint requiere autenticación. Para recuperar contraseña sin estar autenticado, usar `/users/password-reset/request`.
+
+---
+
+### 7. Eliminar Cuenta de Usuario
 Elimina permanentemente la cuenta del usuario autenticado.
 
 **Endpoint:** `DELETE /users/account`
@@ -213,7 +255,35 @@ Authorization: Bearer <tu-token-jwt>
 
 ---
 
-### 7. Solicitar Recuperación de Contraseña
+### 8. Verificar Token
+Verifica si un token JWT es válido.
+
+**Endpoint:** `GET /users/verify-token`
+
+**Headers:**
+```
+Authorization: Bearer <tu-token-jwt>
+```
+
+**Respuesta (200 OK):**
+```json
+{
+  "valid": true,
+  "userId": "abc123"
+}
+```
+
+**Respuesta de Error (401 Unauthorized):**
+```json
+{
+  "success": false,
+  "message": "Unauthorized"
+}
+```
+
+---
+
+### 9. Solicitar Recuperación de Contraseña
 Envía un email de recuperación de contraseña con un token de reseteo.
 
 **Endpoint:** `POST /users/password-reset/request`
@@ -244,7 +314,7 @@ El token expira en 1 hora.
 
 ---
 
-### 8. Confirmar Recuperación de Contraseña
+### 10. Confirmar Recuperación de Contraseña
 Resetea la contraseña usando el token del email.
 
 **Endpoint:** `POST /users/password-reset/confirm`
