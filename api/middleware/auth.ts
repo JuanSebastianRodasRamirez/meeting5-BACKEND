@@ -1,5 +1,7 @@
+import { Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt.js';
 import logger from '../utils/logger.js';
+import { AuthenticatedRequest } from '../types/index.js';
 
 /**
  * Authentication Middleware
@@ -9,11 +11,11 @@ import logger from '../utils/logger.js';
 
 /**
  * Middleware to verify authentication
- * @param {Object} req - Express request
- * @param {Object} res - Express response
- * @param {Function} next - Express next function
+ * @param req - Express request
+ * @param res - Express response
+ * @param next - Express next function
  */
-export const auth = async (req, res, next) => {
+export const auth = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void | Response> => {
   try {
     // Get token from Authorization header
     const authHeader = req.headers.authorization;
@@ -38,11 +40,11 @@ export const auth = async (req, res, next) => {
     
     next();
   } catch (error) {
-    logger.error('Authentication failed', error);
+    logger.error('Authentication failed', error instanceof Error ? error : null);
     
     return res.status(401).json({
       success: false,
-      message: error.message || 'Invalid or expired token'
+      message: error instanceof Error ? error.message : 'Invalid or expired token'
     });
   }
 };

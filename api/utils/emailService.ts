@@ -10,13 +10,31 @@ dotenv.config();
  */
 
 /**
+ * Meeting data for invitation emails
+ */
+interface MeetingInvitationData {
+  title: string;
+  description?: string;
+  scheduledAt: Date;
+  meetingUrl: string;
+}
+
+/**
+ * Email send result
+ */
+interface EmailResult {
+  success: boolean;
+  messageId: string;
+}
+
+/**
  * Creates a nodemailer transporter
- * @returns {Object} Nodemailer transporter
+ * @returns Nodemailer transporter
  */
 const createTransporter = () => {
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: process.env.EMAIL_PORT || 587,
+    port: Number(process.env.EMAIL_PORT) || 587,
     secure: false,
     auth: {
       user: process.env.EMAIL_USER,
@@ -27,11 +45,11 @@ const createTransporter = () => {
 
 /**
  * Sends a password recovery email
- * @param {string} to - Recipient email address
- * @param {string} resetToken - Password reset token
- * @returns {Promise<Object>} Send result
+ * @param to - Recipient email address
+ * @param resetToken - Password reset token
+ * @returns Send result
  */
-export const sendPasswordRecoveryEmail = async (to, resetToken) => {
+export const sendPasswordRecoveryEmail = async (to: string, resetToken: string): Promise<EmailResult> => {
   try {
     const transporter = createTransporter();
     
@@ -63,17 +81,18 @@ export const sendPasswordRecoveryEmail = async (to, resetToken) => {
       messageId: info.messageId
     };
   } catch (error) {
-    throw new Error(`Failed to send recovery email: ${error.message}`);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Failed to send recovery email: ${message}`);
   }
 };
 
 /**
  * Sends a meeting invitation
- * @param {string} to - Recipient email address
- * @param {Object} meetingData - Meeting information
- * @returns {Promise<Object>} Send result
+ * @param to - Recipient email address
+ * @param meetingData - Meeting information
+ * @returns Send result
  */
-export const sendMeetingInvitation = async (to, meetingData) => {
+export const sendMeetingInvitation = async (to: string, meetingData: MeetingInvitationData): Promise<EmailResult> => {
   try {
     const transporter = createTransporter();
     
@@ -105,6 +124,7 @@ export const sendMeetingInvitation = async (to, meetingData) => {
       messageId: info.messageId
     };
   } catch (error) {
-    throw new Error(`Failed to send invitation: ${error.message}`);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Failed to send invitation: ${message}`);
   }
 };

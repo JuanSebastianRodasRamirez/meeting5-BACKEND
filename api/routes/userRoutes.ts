@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Router } from 'express';
 import { body } from 'express-validator';
 import * as UserController from '../controllers/UserController.js';
 import { auth } from '../middleware/auth.js';
@@ -10,7 +10,7 @@ import { validate } from '../middleware/validation.js';
  * @module UserRoutes
  */
 
-const router = express.Router();
+const router: Router = express.Router();
 
 /**
  * POST /api/users/register

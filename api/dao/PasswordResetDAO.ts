@@ -8,9 +8,17 @@ import { db } from '../config/firebase.js';
 
 /**
  * Reference to the reset tokens collection
- * @constant
  */
 const resetTokensCollection = db.collection('passwordResetTokens');
+
+/**
+ * Token data for creation
+ */
+interface CreateTokenDTO {
+  userId: string;
+  token: string;
+  expiresAt: Date;
+}
 
 /**
  * PasswordResetDAO class for database operations
@@ -18,13 +26,10 @@ const resetTokensCollection = db.collection('passwordResetTokens');
 class PasswordResetDAO {
   /**
    * Creates a new password reset token
-   * @param {Object} tokenData - Token data
-   * @param {string} tokenData.userId - User ID
-   * @param {string} tokenData.token - Generated token
-   * @param {Date} tokenData.expiresAt - Expiration date
-   * @returns {Promise<Object>} Created token data with ID
+   * @param tokenData - Token data
+   * @returns Created token data with ID
    */
-  static async create(tokenData) {
+  static async create(tokenData: CreateTokenDTO): Promise<any> {
     try {
       const docRef = await resetTokensCollection.add({
         ...tokenData,
@@ -38,16 +43,17 @@ class PasswordResetDAO {
         used: false
       };
     } catch (error) {
-      throw new Error(`Failed to create reset token: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to create reset token: ${message}`);
     }
   }
 
   /**
    * Finds a valid token
-   * @param {string} token - Token to find
-   * @returns {Promise<Object|null>} Token data or null if not found/expired
+   * @param token - Token to find
+   * @returns Token data or null if not found/expired
    */
-  static async findValidToken(token) {
+  static async findValidToken(token: string): Promise<any | null> {
     try {
       const snapshot = await resetTokensCollection
         .where('token', '==', token)
@@ -72,16 +78,17 @@ class PasswordResetDAO {
         ...data
       };
     } catch (error) {
-      throw new Error(`Failed to find token: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to find token: ${message}`);
     }
   }
 
   /**
    * Marks a token as used
-   * @param {string} tokenId - Token ID
-   * @returns {Promise<boolean>} Success status
+   * @param tokenId - Token ID
+   * @returns Success status
    */
-  static async markAsUsed(tokenId) {
+  static async markAsUsed(tokenId: string): Promise<boolean> {
     try {
       await resetTokensCollection.doc(tokenId).update({
         used: true,
@@ -90,7 +97,8 @@ class PasswordResetDAO {
       
       return true;
     } catch (error) {
-      throw new Error(`Failed to mark token as used: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to mark token as used: ${message}`);
     }
   }
 }

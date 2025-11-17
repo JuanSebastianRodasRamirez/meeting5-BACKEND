@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import userRoutes from './routes/userRoutes.js';
@@ -14,8 +14,8 @@ dotenv.config();
  * @module Index
  */
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+const app: Express = express();
+const PORT: number = parseInt(process.env.PORT || '3000');
 
 /**
  * Global middlewares
@@ -30,7 +30,7 @@ app.use(express.urlencoded({ extended: true }));
 /**
  * Logging middleware
  */
-app.use((req, res, next) => {
+app.use((req: Request, _res: Response, next: NextFunction) => {
   logger.info(`${req.method} ${req.path}`);
   next();
 });
@@ -38,7 +38,7 @@ app.use((req, res, next) => {
 /**
  * Health check endpoint
  */
-app.get('/health', (req, res) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     message: 'Server running correctly',
@@ -56,7 +56,7 @@ app.use('/api/auth/social', socialAuthRoutes);
 /**
  * 404 route
  */
-app.use((req, res) => {
+app.use((_req: Request, res: Response) => {
   res.status(404).json({
     success: false,
     message: 'Route not found'
@@ -66,8 +66,8 @@ app.use((req, res) => {
 /**
  * Global error handler
  */
-app.use((err, req, res, next) => {
-  logger.error('Unhandled error', err);
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  logger.error('Unhandled error', err instanceof Error ? err : null);
   
   res.status(err.status || 500).json({
     success: false,

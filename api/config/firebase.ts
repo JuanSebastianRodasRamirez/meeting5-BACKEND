@@ -11,10 +11,21 @@ dotenv.config();
 
 /**
  * Firebase Admin service account credentials
- * @constant
- * @type {Object}
  */
-const serviceAccount = {
+interface ServiceAccount {
+  type: string;
+  project_id: string | undefined;
+  private_key_id: string | undefined;
+  private_key: string | undefined;
+  client_email: string | undefined;
+  client_id: string | undefined;
+  auth_uri: string;
+  token_uri: string;
+  auth_provider_x509_cert_url: string;
+  client_x509_cert_url: string | undefined;
+}
+
+const serviceAccount: ServiceAccount = {
   type: "service_account",
   project_id: process.env.FIREBASE_PROJECT_ID,
   private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
@@ -32,19 +43,17 @@ const serviceAccount = {
  */
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount)
   });
 }
 
 /**
  * Firestore database instance
- * @constant
  */
 const db = admin.firestore();
 
 /**
  * Firebase Auth instance
- * @constant
  */
 const auth = admin.auth();
 

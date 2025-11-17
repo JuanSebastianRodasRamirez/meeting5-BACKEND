@@ -7,46 +7,46 @@
 /**
  * Log levels
  */
-const LogLevel = {
-  INFO: 'INFO',
-  WARN: 'WARN',
-  ERROR: 'ERROR',
-  DEBUG: 'DEBUG'
-};
+enum LogLevel {
+  INFO = 'INFO',
+  WARN = 'WARN',
+  ERROR = 'ERROR',
+  DEBUG = 'DEBUG'
+}
 
 /**
  * Formats a log message with timestamp and level
- * @param {string} level - Log level
- * @param {string} message - Log message
- * @returns {string} Formatted message
+ * @param level - Log level
+ * @param message - Log message
+ * @returns Formatted message
  */
-const formatMessage = (level, message) => {
+const formatMessage = (level: LogLevel, message: string): string => {
   const timestamp = new Date().toISOString();
   return `[${timestamp}] [${level}] ${message}`;
 };
 
 /**
  * Logs an information message
- * @param {string} message - Message to log
+ * @param message - Message to log
  */
-export const info = (message) => {
+export const info = (message: string): void => {
   console.log(formatMessage(LogLevel.INFO, message));
 };
 
 /**
  * Logs a warning message
- * @param {string} message - Message to log
+ * @param message - Message to log
  */
-export const warn = (message) => {
+export const warn = (message: string): void => {
   console.warn(formatMessage(LogLevel.WARN, message));
 };
 
 /**
  * Logs an error message
- * @param {string} message - Message to log
- * @param {Error} error - Error object
+ * @param message - Message to log
+ * @param err - Error object
  */
-export const error = (message, err = null) => {
+export const error = (message: string, err: Error | null = null): void => {
   console.error(formatMessage(LogLevel.ERROR, message));
   if (err && err.stack) {
     console.error(err.stack);
@@ -55,9 +55,9 @@ export const error = (message, err = null) => {
 
 /**
  * Logs a debug message (development only)
- * @param {string} message - Message to log
+ * @param message - Message to log
  */
-export const debug = (message) => {
+export const debug = (message: string): void => {
   if (process.env.NODE_ENV === 'development') {
     console.log(formatMessage(LogLevel.DEBUG, message));
   }

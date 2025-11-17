@@ -1,5 +1,7 @@
 # 📚 Documentación de la API - Meeting5 Backend
 
+> **Backend desarrollado con Node.js + Express + TypeScript**
+
 ## 🌐 URL Base
 ```
 http://localhost:3000/api
