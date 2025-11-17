@@ -13,11 +13,13 @@ Backend para plataforma de videoconferencias del Sprint 1.
 - ✅ Base de datos Firebase/Firestore
 - ✅ Autenticación con JWT
 - ✅ Validación de datos con express-validator
-- ✅ Documentación con JSDoc
+- ✅ **Totalmente tipado con TypeScript**
+- ✅ Interfaces y tipos definidos para seguridad de tipos
+- ✅ Modo estricto de TypeScript habilitado
 
 ## Tecnologías
 
-- Node.js + Express
+- Node.js + Express + **TypeScript**
 - Firebase Admin SDK (Firestore)
 - JWT para autenticación
 - Bcrypt para hashing de contraseñas
@@ -32,10 +34,10 @@ api/
 ├── controllers/    # Controladores de rutas
 ├── dao/           # Data Access Objects
 ├── middleware/    # Middlewares (auth, validation)
-├── models/        # Modelos de datos
 ├── routes/        # Definición de rutas
+├── types/         # Definiciones de tipos TypeScript
 ├── utils/         # Utilidades (JWT, email, logger)
-└── index.js       # Punto de entrada
+└── index.ts       # Punto de entrada
 ```
 
 ## Instalación
@@ -57,6 +59,12 @@ cp .env.example .env
 ### Desarrollo
 ```bash
 npm run dev
+```
+Ejecuta el servidor con hot reload usando `tsx watch`.
+
+### Compilar TypeScript
+```bash
+npm run build
 ```
 
 ### Producción
@@ -173,6 +181,27 @@ Authorization: Bearer <token-jwt>
 - **users**: Información de usuarios
 - **meetings**: Reuniones de videoconferencia
 - **passwordResetTokens**: Tokens de recuperación de contraseña
+
+## TypeScript
+
+El proyecto está completamente tipado con TypeScript. Las definiciones de tipos se encuentran en `api/types/index.ts`:
+
+- `User` - Modelo de usuario
+- `Meeting` - Modelo de reunión
+- `CreateUserDTO`, `UpdateUserDTO` - DTOs para usuarios
+- `CreateMeetingDTO`, `UpdateMeetingDTO` - DTOs para reuniones
+- `AuthenticatedRequest` - Request de Express con usuario autenticado
+- `JWTPayload` - Payload del token JWT
+- Y más...
+
+### Configuración TypeScript
+
+El archivo `tsconfig.json` está configurado con:
+- **target**: ES2020
+- **module**: ES2020 (módulos ES)
+- **strict**: true (modo estricto)
+- **rootDir**: ./api
+- **outDir**: ./dist
 
 ## Licencia
 

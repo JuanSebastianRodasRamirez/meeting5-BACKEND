@@ -1,10 +1,12 @@
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
+import { Request, Response } from 'express';
 import UserDAO from '../dao/UserDAO.js';
 import PasswordResetDAO from '../dao/PasswordResetDAO.js';
 import { generateToken } from '../utils/jwt.js';
 import { sendPasswordRecoveryEmail } from '../utils/emailService.js';
 import logger from '../utils/logger.js';
+import { AuthenticatedRequest } from '../types/index.js';
 
 /**
  * User Controller
@@ -14,10 +16,10 @@ import logger from '../utils/logger.js';
 
 /**
  * Registers a new user
- * @param {Object} req - Express request
- * @param {Object} res - Express response
+ * @param req - Express request
+ * @param res - Express response
  */
-export const register = async (req, res) => {
+export const register = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { firstName, lastName, age, email, password, provider = 'manual' } = req.body;
     
@@ -31,7 +33,7 @@ export const register = async (req, res) => {
     }
     
     // Hash the password (only for manual registration)
-    let hashedPassword = null;
+    let hashedPassword: string | null = null;
     if (provider === 'manual' && password) {
       hashedPassword = await bcrypt.hash(password, 10);
     }
@@ -42,7 +44,7 @@ export const register = async (req, res) => {
       lastName,
       age: parseInt(age),
       email,
-      password: hashedPassword,
+      password: hashedPassword!,
       provider
     };
     
@@ -59,7 +61,7 @@ export const register = async (req, res) => {
     
     logger.info(`User registered: ${email}`);
     
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'User registered successfully',
       data: {
@@ -68,21 +70,21 @@ export const register = async (req, res) => {
       }
     });
   } catch (error) {
-    logger.error('Failed to register user', error);
-    res.status(500).json({
+    logger.error('Failed to register user', error instanceof Error ? error : null);
+    return res.status(500).json({
       success: false,
       message: 'Failed to register user',
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 };
 
 /**
  * Logs in a user
- * @param {Object} req - Express request
- * @param {Object} res - Express response
+ * @param req - Express request
+ * @param res - Express response
  */
-export const login = async (req, res) => {
+export const login = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { email, password, provider = 'manual' } = req.body;
     
@@ -119,7 +121,7 @@ export const login = async (req, res) => {
     
     logger.info(`User logged in: ${email}`);
     
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Login successful',
       data: {
@@ -128,23 +130,23 @@ export const login = async (req, res) => {
       }
     });
   } catch (error) {
-    logger.error('Failed to log in user', error);
-    res.status(500).json({
+    logger.error('Failed to log in user', error instanceof Error ? error : null);
+    return res.status(500).json({
       success: false,
       message: 'Failed to log in',
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 };
 
 /**
  * Gets the profile of the authenticated user
- * @param {Object} req - Express request
- * @param {Object} res - Express response
+ * @param req - Express request
+ * @param res - Express response
  */
-export const getProfile = async (req, res) => {
+export const getProfile = async (req: AuthenticatedRequest, res: Response): Promise<Response> => {
   try {
-    const user = await UserDAO.findById(req.user.userId);
+    const user = await UserDAO.findById(req.user!.userId);
     
     if (!user) {
       return res.status(404).json({
@@ -156,31 +158,31 @@ export const getProfile = async (req, res) => {
     // Do not return the password
     delete user.password;
     
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: user
     });
   } catch (error) {
-    logger.error('Failed to get profile', error);
-    res.status(500).json({
+    logger.error('Failed to get profile', error instanceof Error ? error : null);
+    return res.status(500).json({
       success: false,
       message: 'Failed to get profile',
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 };
 
 /**
  * Updates user information
- * @param {Object} req - Express request
- * @param {Object} res - Express response
+ * @param req - Express request
+ * @param res - Express response
  */
-export const updateProfile = async (req, res) => {
+export const updateProfile = async (req: AuthenticatedRequest, res: Response): Promise<Response> => {
   try {
     const { firstName, lastName, age, email } = req.body;
     
     // Check if the new email already exists (if it's being changed)
-    if (email && email !== req.user.email) {
+    if (email && email !== req.user!.email) {
       const existingUser = await UserDAO.findByEmail(email);
       if (existingUser) {
         return res.status(400).json({
@@ -190,65 +192,65 @@ export const updateProfile = async (req, res) => {
       }
     }
     
-    const updateData = {};
+    const updateData: any = {};
     if (firstName) updateData.firstName = firstName;
     if (lastName) updateData.lastName = lastName;
     if (age) updateData.age = parseInt(age);
     if (email) updateData.email = email;
     
-    const updatedUser = await UserDAO.update(req.user.userId, updateData);
+    const updatedUser = await UserDAO.update(req.user!.userId, updateData);
     
     // Do not return the password
     delete updatedUser.password;
     
-    logger.info(`User updated: ${req.user.email}`);
+    logger.info(`User updated: ${req.user!.email}`);
     
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Profile updated successfully',
       data: updatedUser
     });
   } catch (error) {
-    logger.error('Failed to update profile', error);
-    res.status(500).json({
+    logger.error('Failed to update profile', error instanceof Error ? error : null);
+    return res.status(500).json({
       success: false,
       message: 'Failed to update profile',
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 };
 
 /**
  * Deletes the user account
- * @param {Object} req - Express request
- * @param {Object} res - Express response
+ * @param req - Express request
+ * @param res - Express response
  */
-export const deleteAccount = async (req, res) => {
+export const deleteAccount = async (req: AuthenticatedRequest, res: Response): Promise<Response> => {
   try {
-    await UserDAO.delete(req.user.userId);
+    await UserDAO.delete(req.user!.userId);
     
-    logger.info(`User deleted: ${req.user.email}`);
+    logger.info(`User deleted: ${req.user!.email}`);
     
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Account deleted successfully'
     });
   } catch (error) {
-    logger.error('Failed to delete account', error);
-    res.status(500).json({
+    logger.error('Failed to delete account', error instanceof Error ? error : null);
+    return res.status(500).json({
       success: false,
       message: 'Failed to delete account',
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 };
 
 /**
  * Requests password recovery
- * @param {Object} req - Express request
- * @param {Object} res - Express response
+ * @param req - Express request
+ * @param res - Express response
  */
-export const requestPasswordReset = async (req, res) => {
+export const requestPasswordReset = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { email } = req.body;
     
@@ -280,7 +282,7 @@ export const requestPasswordReset = async (req, res) => {
       await sendPasswordRecoveryEmail(email, resetToken);
       logger.info(`Password recovery email sent to: ${email}`);
     } catch (emailError) {
-      logger.error(`Failed to send recovery email to ${email}:`, emailError);
+      logger.error(`Failed to send recovery email to ${email}:`, emailError instanceof Error ? emailError : null);
       // In development: continue anyway (token is in database)
       // In production: you might want to return an error
       if (process.env.NODE_ENV === 'production') {
@@ -290,26 +292,26 @@ export const requestPasswordReset = async (req, res) => {
     
     logger.info(`Password recovery token created for: ${email}`);
     
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'If the email exists, you will receive instructions to reset your password'
     });
   } catch (error) {
-    logger.error('Failed to request password recovery', error);
-    res.status(500).json({
+    logger.error('Failed to request password recovery', error instanceof Error ? error : null);
+    return res.status(500).json({
       success: false,
       message: 'Failed to process request',
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 };
 
 /**
  * Resets password with token
- * @param {Object} req - Express request
- * @param {Object} res - Express response
+ * @param req - Express request
+ * @param res - Express response
  */
-export const resetPassword = async (req, res) => {
+export const resetPassword = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { token, newPassword } = req.body;
     
@@ -336,42 +338,42 @@ export const resetPassword = async (req, res) => {
     
     logger.info(`Password reset for user ID: ${resetToken.userId}`);
     
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Password updated successfully'
     });
   } catch (error) {
-    logger.error('Failed to reset password', error);
-    res.status(500).json({
+    logger.error('Failed to reset password', error instanceof Error ? error : null);
+    return res.status(500).json({
       success: false,
       message: 'Failed to reset password',
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 };
 
 /**
  * Logs out a user (invalidates token on client side)
- * @param {Object} req - Express request
- * @param {Object} res - Express response
+ * @param req - Express request
+ * @param res - Express response
  */
-export const logout = async (req, res) => {
+export const logout = async (req: AuthenticatedRequest, res: Response): Promise<Response> => {
   try {
     // Note: With JWT, logout is handled client-side by removing the token
     // This endpoint serves as a confirmation and logging mechanism
     
-    logger.info(`User logged out: ${req.user.email}`);
+    logger.info(`User logged out: ${req.user!.email}`);
     
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Logout successful'
     });
   } catch (error) {
-    logger.error('Failed to logout', error);
-    res.status(500).json({
+    logger.error('Failed to logout', error instanceof Error ? error : null);
+    return res.status(500).json({
       success: false,
       message: 'Failed to logout',
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 };

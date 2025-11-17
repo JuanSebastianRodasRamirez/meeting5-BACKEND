@@ -1,4 +1,5 @@
 import { db } from '../config/firebase.js';
+import { UpdateMeetingDTO } from '../types/index.js';
 
 /**
  * Meetings Data Access Object
@@ -8,7 +9,6 @@ import { db } from '../config/firebase.js';
 
 /**
  * Reference to the meetings collection
- * @constant
  */
 const meetingsCollection = db.collection('meetings');
 
@@ -18,20 +18,14 @@ const meetingsCollection = db.collection('meetings');
 class MeetingsDAO {
   /**
    * Creates a new meeting
-   * @param {Object} meetingData - Meeting data to create
-   * @param {string} meetingData.title - Meeting title
-   * @param {string} meetingData.description - Meeting description
-   * @param {Date} meetingData.scheduledAt - Scheduled date and time
-   * @param {string} meetingData.hostId - Host user ID
-   * @param {Array<string>} meetingData.participants - Array of participant IDs
-   * @param {string} meetingData.meetingUrl - URL to join the meeting
-   * @returns {Promise<Object>} Created meeting data with ID
+   * @param meetingData - Meeting data to create
+   * @returns Created meeting data with ID
    */
-  static async create(meetingData) {
+  static async create(meetingData: any): Promise<any> {
     try {
       const docRef = await meetingsCollection.add({
         ...meetingData,
-        status: 'scheduled', // scheduled, ongoing, completed, cancelled
+        status: 'scheduled',
         createdAt: new Date(),
         updatedAt: new Date()
       });
@@ -42,16 +36,17 @@ class MeetingsDAO {
         status: 'scheduled'
       };
     } catch (error) {
-      throw new Error(`Failed to create meeting: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to create meeting: ${message}`);
     }
   }
 
   /**
    * Finds a meeting by ID
-   * @param {string} meetingId - Meeting ID
-   * @returns {Promise<Object|null>} Meeting data or null if not found
+   * @param meetingId - Meeting ID
+   * @returns Meeting data or null if not found
    */
-  static async findById(meetingId) {
+  static async findById(meetingId: string): Promise<any | null> {
     try {
       const doc = await meetingsCollection.doc(meetingId).get();
       
@@ -64,16 +59,17 @@ class MeetingsDAO {
         ...doc.data()
       };
     } catch (error) {
-      throw new Error(`Failed to find meeting by ID: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to find meeting by ID: ${message}`);
     }
   }
 
   /**
    * Gets all meetings for a user (as host or participant)
-   * @param {string} userId - User ID
-   * @returns {Promise<Array>} Array of meeting data
+   * @param userId - User ID
+   * @returns Array of meeting data
    */
-  static async getByUserId(userId) {
+  static async getByUserId(userId: string): Promise<any[]> {
     try {
       // Get meetings where user is host
       const hostSnapshot = await meetingsCollection
@@ -104,25 +100,26 @@ class MeetingsDAO {
       );
       
       // Sort by date in memory (avoids need for composite indexes)
-      uniqueMeetings.sort((a, b) => {
+      uniqueMeetings.sort((a: any, b: any) => {
         const dateA = a.scheduledAt?.toDate?.() || new Date(a.scheduledAt);
         const dateB = b.scheduledAt?.toDate?.() || new Date(b.scheduledAt);
-        return dateB - dateA; // Descending (most recent first)
+        return dateB.getTime() - dateA.getTime(); // Descending (most recent first)
       });
       
       return uniqueMeetings;
     } catch (error) {
-      throw new Error(`Failed to get user meetings: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to get user meetings: ${message}`);
     }
   }
 
   /**
    * Updates a meeting
-   * @param {string} meetingId - Meeting ID
-   * @param {Object} updateData - Data to update
-   * @returns {Promise<Object>} Updated meeting data
+   * @param meetingId - Meeting ID
+   * @param updateData - Data to update
+   * @returns Updated meeting data
    */
-  static async update(meetingId, updateData) {
+  static async update(meetingId: string, updateData: Partial<UpdateMeetingDTO>): Promise<any> {
     try {
       await meetingsCollection.doc(meetingId).update({
         ...updateData,
@@ -131,21 +128,23 @@ class MeetingsDAO {
       
       return await this.findById(meetingId);
     } catch (error) {
-      throw new Error(`Failed to update meeting: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to update meeting: ${message}`);
     }
   }
 
   /**
    * Deletes a meeting
-   * @param {string} meetingId - Meeting ID
-   * @returns {Promise<boolean>} Success status
+   * @param meetingId - Meeting ID
+   * @returns Success status
    */
-  static async delete(meetingId) {
+  static async delete(meetingId: string): Promise<boolean> {
     try {
       await meetingsCollection.doc(meetingId).delete();
       return true;
     } catch (error) {
-      throw new Error(`Failed to delete meeting: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to delete meeting: ${message}`);
     }
   }
 }

@@ -5,6 +5,10 @@ test*
 verify-requirements.js
 cleanup-database.js
 
+# Old JavaScript files (migrated to TypeScript)
+api/**/*.js
+!api/**/*.d.ts
+
 # Dependencies
 node_modules/
 package-lock.json
