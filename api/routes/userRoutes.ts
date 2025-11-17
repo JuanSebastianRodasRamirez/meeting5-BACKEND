@@ -86,10 +86,10 @@ router.delete('/account', auth, UserController.deleteAccount);
  * @returns {Object} 200 - Token is valid.
  * @returns {Error} 401 - Invalid or expired token.
  */
-router.get('/verify-token', auth, (req, res) => {
+router.get('/verify-token', auth, (req: express.Request & { user?: { userId?: string; email?: string } }, res: express.Response) => {
   // `auth` middleware attaches an object to `req.user`:
   // { userId: decoded.userId, email: decoded.email }
-  res.status(200).json({ valid: true, userId: req.user && req.user.userId });
+  res.status(200).json({ valid: true, userId: req.user?.userId });
 });
 
 /**
