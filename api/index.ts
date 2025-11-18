@@ -47,6 +47,23 @@ app.get('/health', (_req: Request, res: Response) => {
 });
 
 /**
+ * Root endpoint
+ */
+app.get('/', (_req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    message: 'Meeting5 Backend API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      users: '/api/users',
+      meetings: '/api/meetings',
+      auth: '/api/auth/social'
+    }
+  });
+});
+
+/**
  * Main routes
  */
 app.use('/api/users', userRoutes);
