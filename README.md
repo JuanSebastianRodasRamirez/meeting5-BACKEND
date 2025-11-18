@@ -7,8 +7,10 @@ Backend para plataforma de videoconferencias del Sprint 1.
 - ✅ Registro de usuarios (nombre, apellido, edad, correo, contraseña)
 - ✅ Login con múltiples proveedores (manual, Google, Facebook)
 - ✅ Edición de perfil de usuario
+- ✅ Cambio de contraseña para usuarios autenticados
 - ✅ Eliminación de cuenta
 - ✅ Recuperación de contraseña por correo electrónico
+- ✅ Verificación de tokens JWT
 - ✅ Creación y gestión de reuniones de videoconferencia
 - ✅ Base de datos Firebase/Firestore
 - ✅ Autenticación con JWT
