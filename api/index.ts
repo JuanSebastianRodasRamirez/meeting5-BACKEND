@@ -16,12 +16,12 @@ dotenv.config();
 
 const app: Express = express();
 const PORT: number = parseInt(process.env.PORT || '3000');
-
+const frontUrl: string = process.env.FRONTEND_URL || 'http://localhost:5173';
 /**
  * Global middlewares
  */
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: frontUrl,
   credentials: true
 }));
 app.use(express.json());
