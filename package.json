@@ -1,0 +1,48 @@
+{
+  "name": "meeting5-backend",
+  "version": "1.0.0",
+  "description": "Backend para plataforma de videoconferencias - Sprint 1",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "tsx watch api/index.ts",
+    "build": "tsc",
+    "test": "node test-typescript-complete.js"
+  },
+  "keywords": [
+    "videoconference",
+    "meetings",
+    "backend",
+    "express",
+    "firebase",
+    "typescript"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.10.1",
+    "@types/nodemailer": "^7.0.3",
+    "@types/uuid": "^10.0.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "firebase-admin": "^11.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^6.9.7",
+    "typescript": "^5.9.3",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "ts-node-dev": "^2.0.0",
+    "tsx": "^4.20.6"
+  }
+}
