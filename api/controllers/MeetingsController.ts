@@ -250,3 +250,93 @@ export const deleteMeeting = async (req: AuthenticatedRequest, res: Response): P
     });
   }
 };
+
+/**
+ * Gets meeting participants and metadata
+ * Used by chat microservice to verify access and get meeting info
+ * @param req - Express request
+ * @param res - Express response
+ */
+export const getMeetingParticipants = async (req: AuthenticatedRequest, res: Response): Promise<Response> => {
+  try {
+    const { id } = req.params;
+    const userId = req.user!.userId;
+
+    const meeting = await MeetingsDAO.findById(id);
+
+    if (!meeting) {
+      return res.status(404).json({
+        success: false,
+        message: 'Meeting not found'
+      });
+    }
+
+    // Verify that user has access to the meeting
+    const hasAccess = meeting.hostId === userId ||
+      meeting.participants?.includes(userId);
+
+    if (!hasAccess) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied to this meeting'
+      });
+    }
+
+    // Get participant details
+    const participantDetails = [];
+    for (const participantId of meeting.participants || []) {
+      try {
+        const user = await UserDAO.findById(participantId);
+        if (user) {
+          participantDetails.push({
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email
+          });
+        }
+      } catch (error) {
+        logger.error(`Failed to get participant ${participantId}`, error instanceof Error ? error : null);
+      }
+    }
+
+    // Get host details
+    let hostDetails = null;
+    try {
+      const host = await UserDAO.findById(meeting.hostId);
+      if (host) {
+        hostDetails = {
+          id: host.id,
+          firstName: host.firstName,
+          lastName: host.lastName,
+          email: host.email
+        };
+      }
+    } catch (error) {
+      logger.error(`Failed to get host ${meeting.hostId}`, error instanceof Error ? error : null);
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        meetingId: meeting.id,
+        title: meeting.title,
+        description: meeting.description,
+        hostId: meeting.hostId,
+        host: hostDetails,
+        participants: meeting.participants || [],
+        participantDetails,
+        status: meeting.status,
+        scheduledAt: meeting.scheduledAt,
+        meetingUrl: meeting.meetingUrl
+      }
+    });
+  } catch (error) {
+    logger.error('Failed to get meeting participants', error instanceof Error ? error : null);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to get meeting participants',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};

@@ -16,12 +16,14 @@ dotenv.config();
 
 const app: Express = express();
 const PORT: number = parseInt(process.env.PORT || '3000');
+const frontUrl: string = process.env.FRONTEND_URL || 'http://localhost:5173';
+const chatServiceUrl: string = process.env.CHAT_SERVICE_URL || 'http://localhost:3001';
 
 /**
  * Global middlewares
  */
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: [frontUrl, chatServiceUrl],
   credentials: true
 }));
 app.use(express.json());
