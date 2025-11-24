@@ -23,7 +23,8 @@ router.post(
     body('title').notEmpty().withMessage('Title is required'),
     body('description').optional().isString(),
     body('scheduledAt').isISO8601().withMessage('Date must be valid'),
-    body('participants').optional().isArray().withMessage('Participants must be an array')
+    body('participants').optional().isArray().withMessage('Participants must be an array'),
+    body('isPublic').optional().isBoolean().withMessage('isPublic must be a boolean')
   ],
   validate,
   MeetingsController.createMeeting
@@ -58,7 +59,8 @@ router.put(
     body('title').optional().notEmpty().withMessage('Title cannot be empty'),
     body('description').optional().isString(),
     body('scheduledAt').optional().isISO8601().withMessage('Date must be valid'),
-    body('status').optional().isIn(['scheduled', 'ongoing', 'completed', 'cancelled']).withMessage('Invalid status')
+    body('status').optional().isIn(['scheduled', 'ongoing', 'completed', 'cancelled']).withMessage('Invalid status'),
+    body('isPublic').optional().isBoolean().withMessage('isPublic must be a boolean')
   ],
   validate,
   MeetingsController.updateMeeting
