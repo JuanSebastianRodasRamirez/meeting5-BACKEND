@@ -42,6 +42,12 @@ router.get('/', auth, MeetingsController.getUserMeetings);
 router.get('/:id', auth, MeetingsController.getMeetingById);
 
 /**
+ * GET /api/meetings/:id/participants
+ * Gets meeting participants (for chat microservice)
+ */
+router.get('/:id/participants', auth, MeetingsController.getMeetingParticipants);
+
+/**
  * PUT /api/meetings/:id
  * Updates a meeting
  */

@@ -1,9 +1,11 @@
 # PDFs, imágenes y tests del proyecto
 ENUNCIADO MP #3 PLATAFORMA DE VIDEOCONFERENCIAS.docx.pdf
 image.png
+image0.png
 test*
 verify-requirements.js
 cleanup-database.js
+CHAT_MICROSERVICE_INSTRUCTIONS.md
 
 # Old JavaScript files (migrated to TypeScript)
 api/**/*.js
