@@ -19,7 +19,7 @@ import { AuthenticatedRequest } from '../types/index.js';
  */
 export const createMeeting = async (req: AuthenticatedRequest, res: Response): Promise<Response> => {
   try {
-    const { title, description, scheduledAt, participants = [] } = req.body;
+    const { title, description, scheduledAt, participants } = req.body;
 
     // Validate date
     const scheduledDate = new Date(scheduledAt);
@@ -40,36 +40,39 @@ export const createMeeting = async (req: AuthenticatedRequest, res: Response): P
         ? meetingUrl
         : title;
 
-    const meetingData = {
-      title: finalTitle,
-      description: description || "",
-      scheduledAt: scheduledDate,
-      hostId: req.user!.userId,
-      participants: Array.isArray(participants) ? participants : [],
-      meetingUrl,
-    };
-
-    const meeting = await MeetingsDAO.create(meetingData);
-
+    const participantsIDs = []
     // Send invitations
     if (Array.isArray(participants) && participants.length > 0) {
-      for (const participantId of participants) {
+      for (const participantEmail of participants) {
         try {
-          const participant = await UserDAO.findById(participantId);
-          if (participant && participant.email) {
+          const participant = await UserDAO.findByEmail(participantEmail);
+          if (participant) {
             await sendMeetingInvitation(participant.email, {
               title: finalTitle,
               description: description || '',
               scheduledAt: scheduledDate,
               meetingUrl
             });
+            participantsIDs.push(participant.id);
           }
         } catch (emailError) {
-          logger.error(`Failed to send invitation to participant ${participantId}`, emailError instanceof Error ? emailError : null);
+          logger.error(`Failed to send invitation to participant ${participantEmail}`, emailError instanceof Error ? emailError : null);
                     // Continue with other participants
         }
+        
       }
-    }
+    } 
+    
+    const meetingData = {
+      title: finalTitle,
+      description: description || "",
+      scheduledAt: scheduledDate,
+      hostId: req.user!.userId,
+      participants: participantsIDs,
+      meetingUrl,
+    };
+
+    const meeting = await MeetingsDAO.create(meetingData);
 
     logger.info(`Meeting created: ${finalTitle} by user ${req.user!.userId}`);
 
@@ -284,6 +287,7 @@ export const getMeetingParticipants = async (req: AuthenticatedRequest, res: Res
 
     // Get participant details
     const participantDetails = [];
+   
     for (const participantId of meeting.participants || []) {
       try {
         const user = await UserDAO.findById(participantId);
@@ -299,6 +303,7 @@ export const getMeetingParticipants = async (req: AuthenticatedRequest, res: Res
         logger.error(`Failed to get participant ${participantId}`, error instanceof Error ? error : null);
       }
     }
+    
 
     // Get host details
     let hostDetails = null;
