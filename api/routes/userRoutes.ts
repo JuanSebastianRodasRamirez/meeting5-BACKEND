@@ -51,6 +51,16 @@ router.post(
   UserController.login
 );
 
+router.post(
+  '/google-login',
+  [
+    body('userName').notEmpty().withMessage('User name is required'),
+    body('email').isEmail().withMessage('Invalid email')
+  ],
+  validate,
+  UserController.googleLogin
+)
+
 /**
  * GET /api/users/profile
  * Gets the authenticated user's profile
