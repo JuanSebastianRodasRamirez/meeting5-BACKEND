@@ -86,7 +86,7 @@ export const register = async (req: Request, res: Response): Promise<Response> =
  */
 export const login = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const { email, password, provider = 'manual' } = req.body;
+    const { email, password } = req.body;
     
     // Find the user
     const user = await UserDAO.findByEmail(email);
@@ -98,16 +98,21 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
       });
     }
     
-    // Verify password (only for manual login)
-    if (provider === 'manual') {
-      const isValidPassword = await bcrypt.compare(password, user.password);
+    // Verify login method
+    if (user.provider === 'google' || user.provider === 'facebook') {
+      return res.status(402).json({
+        success: false,
+        message: 'Wrong method of authentication'
+      });
+    }
+
+    const isValidPassword = await bcrypt.compare(password, user.password);
       
-      if (!isValidPassword) {
-        return res.status(401).json({
-          success: false,
-          message: 'Invalid credentials'
-        });
-      }
+    if (!isValidPassword) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
     }
     
     // Do not return the password
@@ -134,6 +139,81 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
     return res.status(500).json({
       success: false,
       message: 'Failed to log in',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};
+
+export const googleLogin = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { userName, email } = req.body;
+    // Check if user already exists
+    const user = await UserDAO.findByEmail(email);  
+    if (user) {
+        // Existing Google user, proceed to login
+
+        // Do not return the password
+        delete user.password;
+
+        const token = generateToken({
+        userId: user.id,
+        email: user.email
+        });
+
+        logger.info(`User logged in: ${email}`);
+    
+        return res.status(200).json({
+          success: true,
+          message: 'Login successful',
+          data: {
+            user,
+            token
+          }
+        });
+    } else {
+      // Create new user
+
+      // Hash the password (only for manual registration)
+      let hashedPassword: string | null = null;
+
+      hashedPassword = await bcrypt.hash('1234', 10);
+
+      const userData = {
+        firstName: userName,
+        lastName: '',
+        age: 0,
+        email,
+        password: hashedPassword, // Dummy password, not used
+        provider: 'google'
+      };
+      
+      const user = await UserDAO.create(userData);
+
+      logger.info(`User registered: ${email}`);
+
+      // Do not return the password
+      delete user.password;
+
+      // Generate JWT token
+      const token = generateToken({
+        userId: user.id,
+        email: user.email
+      });
+    
+      return res.status(201).json({
+        success: true,
+        message: 'User registered successfully',
+        data: {
+          user,
+          token
+        }
+      });
+    }
+  } catch (error) {
+    logger.error('Failed to log in with Google', error instanceof Error ? error : null);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to log in with Google',
       error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
