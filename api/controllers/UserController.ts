@@ -144,9 +144,9 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
   }
 };
 
-export const googleLogin = async (req: Request, res: Response): Promise<Response> => {
+export const socialLogin = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const { userName, email } = req.body;
+    const { userName, email, Provider } = req.body;
     // Check if user already exists
     const user = await UserDAO.findByEmail(email);  
     if (user) {
@@ -184,7 +184,7 @@ export const googleLogin = async (req: Request, res: Response): Promise<Response
         age: 0,
         email,
         password: hashedPassword, // Dummy password, not used
-        provider: 'google'
+        provider: Provider
       };
       
       const user = await UserDAO.create(userData);
