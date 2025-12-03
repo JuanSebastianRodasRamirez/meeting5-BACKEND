@@ -51,6 +51,28 @@ router.post(
   UserController.login
 );
 
+router.post(
+  '/google-login',
+  [
+    body('userName').notEmpty().withMessage('User name is required'),
+    body('email').isEmail().withMessage('Invalid email'),
+    body('provider').equals('google').withMessage('Provider must be google')
+  ],
+  validate,
+  UserController.socialLogin
+)
+
+router.post(
+  '/facebook-login',
+  [
+    body('userName').notEmpty().withMessage('User name is required'),
+    body('email').isEmail().withMessage('Invalid email'),
+    body('provider').equals('facebook').withMessage('Provider must be facebook')
+  ],
+  validate,
+  UserController.socialLogin
+)
+
 /**
  * GET /api/users/profile
  * Gets the authenticated user's profile
